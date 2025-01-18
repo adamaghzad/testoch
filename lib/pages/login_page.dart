@@ -32,7 +32,6 @@ class LoginPage extends StatelessWidget {
       );
 
       if (response.statusCode == 200) {
-       
         // Parse response from the backend
         final jsonResponse = jsonDecode(response.body);
         print('Response: ${response.body}'); // Log response for debugging
@@ -76,7 +75,7 @@ class LoginPage extends StatelessWidget {
                 SizedBox(width: 8), // Space between icon and text
                 Expanded(
                   child: Text(
-                    'Error: invalid Username or Password', // Show status code
+                    'Error: Invalid Username or Password', // Show status code
                     style: TextStyle(color: Colors.white), // Change text color
                   ),
                 ),
