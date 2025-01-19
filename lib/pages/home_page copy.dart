@@ -17,17 +17,17 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: MyHomePage(),
+      home: MyHomePage1(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage1 extends StatefulWidget {
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  _MyHomePage1State createState() => _MyHomePage1State();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePage1State extends State<MyHomePage1> {
   List<Map<String, dynamic>> _data = [];
   bool _isLoading = true;
   bool _selectAllColumns = true;
@@ -175,7 +175,7 @@ Widget build(BuildContext context) {
 
   return Scaffold(
     appBar: AppBar(
-      title: Text('Admin Dashboard'),
+      title: Text('Admin Dashboard1'),
       backgroundColor: Colors.blue,
     ),
     body: _isLoading
@@ -569,6 +569,8 @@ Widget build(BuildContext context) {
       if ((_columnVisibility['note'] ?? false)) DataColumn(label: Text('Note')),
       if ((_columnVisibility['totalPrix'] ?? false))
         DataColumn(label: Text('Total Price')),
+
+        DataColumn(label: Text('Action')),
     ];
   }
 
@@ -622,9 +624,70 @@ Widget build(BuildContext context) {
         DataCell(Text(row['note'] ?? '')),
       if ((_columnVisibility['totalPrix'] ?? false))
         DataCell(Text(_calculateTotalPrix(row).toStringAsFixed(2))),
+        
+      DataCell(
+        IconButton(
+          icon: Icon(Icons.delete, color: Colors.red),
+          onPressed: () => _deleteRow(row),
+        ),
+      ),
     ];
   }
+ void _deleteRow(Map<String, dynamic> row) async {
+    // Show a confirmation dialog before deleting
+    bool confirmDelete = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Confirm Delete'),
+          content: Text('Are you sure you want to delete this row?'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+            ),
+            TextButton(
+              child: Text('Delete'),
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+            ),
+          ],
+        );
+      },
+    );
 
+    if (confirmDelete == true) {
+      // Remove the row from the data
+      setState(() {
+        _data.remove(row);
+      });
+
+      // Optionally, you can also send a request to your backend to delete the row from the database
+       await _deleteRowFromBackend(row);
+
+
+    }
+  }
+
+  Future<void> _deleteRowFromBackend(Map<String, dynamic> row) async {
+    String? cookie = await _getCookie(); // Retrieve the stored cookie
+
+    final response = await http.get(
+      Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/report/delete/${row['id']}'),
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Accept': 'text/html',
+        if (cookie != null) 'Cookie': 'user_auth=$cookie;',
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete row');
+    }
+  }
   Widget _buildPaginationControls(int totalItems) {
     // Calculate total pages and ensure it's at least 1 (to avoid zero page error)
     int totalPages = (totalItems / _itemsPerPage).ceil();

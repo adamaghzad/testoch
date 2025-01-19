@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart'; // Import ScreenUtil
 import 'pages/login_page.dart';
-import 'pages/home_page.dart'; // Import the home page
+import 'pages/home_page copy.dart'; // Import the home page
+import 'pages/signup_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,8 +22,8 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           initialRoute: '/',
           routes: {
-            '/': (context) => LoginPage(),
-            '/home': (context) => MyHomePage(),
+            '/home': (context) => SignUpPage(),
+            '/': (context) => SignUpPage(),
           },
         );
       },

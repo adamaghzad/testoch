@@ -1,103 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:CORTOBA/pages/UserInput.dart';
 import 'package:CORTOBA/pages/home_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'components/my_button.dart';
-import 'components/my_textfield.dart';
+import 'dart:convert';
 
-class LoginPage extends StatelessWidget {
-  LoginPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  bool isLoading = false;
 
   Future<void> signUserIn(BuildContext context) async {
+    setState(() {
+      isLoading = true;
+    });
+
     final username = usernameController.text;
     final password = passwordController.text;
 
     // API endpoint URL
-    final url = Uri.parse(
-        'https://c6eb-41-251-81-69.ngrok-free.app/testoch/login.php');
+    final url = Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/login');
 
     try {
-      // Make POST request to the backend
+      // Prepare JSON data
+      final bodyData = {
+        'username': username,
+        'password': password,
+      };
+
+      // Make POST request with JSON body
       final response = await http.post(
         url,
-        body: {
-          'username': username,
-          'password': password,
-        },
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode(bodyData),
       );
 
       if (response.statusCode == 200) {
-       
-        // Parse response from the backend
-        final jsonResponse = jsonDecode(response.body);
-        print('Response: ${response.body}'); // Log response for debugging
+        try {
+          final jsonResponse = jsonDecode(response.body);
+          print('Response: ${response.body}');
 
-        if (jsonResponse['status'] == 'success') {
-          // Store cookies and CSRF token using SharedPreferences
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cookie', jsonResponse['cookie']);
-
-          // Check if the user is an admin
-          bool isAdmin = jsonResponse['is_admin'] == 1;
-
-          // Navigate based on the user's role
-          if (isAdmin) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => MyHomePage()), // Admin home page
-            );
+          // Check if 'status' key exists and is not null
+          if (jsonResponse['status'] == 'success') {
+            // Check if 'token' key exists and is not null
+            final token = jsonResponse['cookie'] as String?;
+            if (token != null) {
+              // Store JWT using shared_preferences
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.setString('cookie', token);
+                     bool isAdmin = jsonResponse['is_admin'] == 1;
+              // Navigate to home page or user input page based on role
+              if (isAdmin) {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyHomePage()),
+                );
+              } else {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserInp()),
+                );
+              }
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Token not found in response'), duration: Duration(seconds: 5)),
+              );
+            }
           } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => UserInp()), // User input page
+            // Check if 'message' key exists and is not null
+            final errorMessage = jsonResponse['message'] as String? ?? 'Unknown error occurred';
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(errorMessage), duration: const Duration(seconds: 5)),
             );
           }
-        } else {
-          // Show error message for invalid credentials
+        } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(jsonResponse['message'])),
+            const SnackBar(content: Text('Failed to parse response'), duration: Duration(seconds: 5)),
           );
+          print('Error parsing JSON: $e');
         }
       } else {
-        // Handle non-200 responses from the server
+        // Handle non-200 responses
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.red, // Change background color for error
-            content: Row(
-              children: [
-                Icon(Icons.error, color: Colors.white), // Add error icon
-                SizedBox(width: 8), // Space between icon and text
-                Expanded(
-                  child: Text(
-                    'Error: invalid Username or Password', // Show status code
-                    style: TextStyle(color: Colors.white), // Change text color
-                  ),
-                ),
-              ],
-            ),
-            duration: Duration(seconds: 3), // Duration for how long it shows
-          ),
+          SnackBar(content: Text('Error ${response.statusCode}: ${response.reasonPhrase}'), duration: const Duration(seconds: 5)),
         );
+        print('Response status: ${response.statusCode}');
       }
     } catch (e) {
       // Handle network errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e')),
+        SnackBar(content: Text('Network error: $e'), duration: const Duration(seconds: 5)),
       );
+      print('Network error: $e');
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[300],
+      backgroundColor: Colors.grey[50],
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -105,30 +117,37 @@ class LoginPage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const SizedBox(height: 50),
-                const Icon(Icons.lock, size: 100),
+                const Icon(Icons.lock_open, size: 100, color: Colors.black),
                 const SizedBox(height: 50),
                 Text(
                   'Welcome back, you\'ve been missed!',
                   style: TextStyle(
-                    color: Colors.grey[700],
+                    color: Colors.black,
                     fontSize: 16,
                   ),
                 ),
                 const SizedBox(height: 25),
-                MyTextField(
+                TextField(
                   controller: usernameController,
-                  hintText: 'Username',
-                  obscureText: false,
+                  decoration: const InputDecoration(
+                    hintText: 'Username',
+                  ),
                 ),
                 const SizedBox(height: 10),
-                MyTextField(
+                TextField(
                   controller: passwordController,
-                  hintText: 'Password',
                   obscureText: true,
+                  decoration: const InputDecoration(
+                    hintText: 'Password',
+                  ),
                 ),
                 const SizedBox(height: 25),
-                MyButton(onTap: () => signUserIn(context)),
-                const SizedBox(height: 50),
+                isLoading
+                    ? const CircularProgressIndicator()
+                    : ElevatedButton(
+                        onPressed: () => signUserIn(context),
+                        child: const Text('Sign In'),
+                      ),
               ],
             ),
           ),
