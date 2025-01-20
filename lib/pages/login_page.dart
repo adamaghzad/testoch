@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:CORTOBA/pages/UserInput.dart';
 import 'package:CORTOBA/pages/home_page.dart';
+import'package:CORTOBA/pages/Signup_page.dart';
 import 'dart:convert';
 
 class LoginPage extends StatefulWidget {
@@ -10,6 +11,7 @@ class LoginPage extends StatefulWidget {
 
   @override
   _LoginPageState createState() => _LoginPageState();
+
 }
 
 class _LoginPageState extends State<LoginPage> {
@@ -148,6 +150,23 @@ class _LoginPageState extends State<LoginPage> {
                         onPressed: () => signUserIn(context),
                         child: const Text('Sign In'),
                       ),
+                const SizedBox(height: 25),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Text('Not a member?'),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => SignUpPage()),
+                        );
+                      },
+                      child: const Text('Register now'),
+                    ),
+                  ],
+                ),
+                      
               ],
             ),
           ),
