@@ -46,17 +46,17 @@ class MyButton extends StatelessWidget {
   final String text;
   final Color color;
   final double borderRadius;
-  final double width; // New property for button width
-  final double height; // New property for button height
+  final double width;
+  final double height;
 
   const MyButton({
     Key? key,
     required this.onTap,
-    this.text = 'Sign In', // Default text
-    this.color = Colors.blue, // Default color
-    this.borderRadius = 12.0, // Default border radius
-    this.width = 300, // Default width
-    this.height = 60, // Default height
+    this.text = 'Sign In',
+    this.color = Colors.blue,
+    this.borderRadius = 12.0,
+    this.width = 300,
+    this.height = 60,
   }) : super(key: key);
 
   @override
@@ -68,20 +68,17 @@ class MyButton extends StatelessWidget {
       ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(borderRadius), // For ripple effect
+        borderRadius: BorderRadius.circular(borderRadius), // Ripple effect
         child: Container(
-          width: width, // Use the width property
-          height: height, // Use the height property
-          padding: const EdgeInsets.all(20),
-          margin: const EdgeInsets.symmetric(horizontal: 10),
-          child: Center(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
+          width: width,
+          height: height,
+          alignment: Alignment.center,
+          child: Text(
+            text,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),

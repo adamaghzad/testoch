@@ -1,173 +1,223 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:CORTOBA/pages/UserInput.dart';
 import 'package:CORTOBA/pages/home_page.dart';
-import'package:CORTOBA/pages/Signup_page.dart';
-import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'components/my_button.dart';
+import 'components/my_textfield.dart';
+import 'package:CORTOBA/pages/signup_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
-
 }
 
 class _LoginPageState extends State<LoginPage> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
-  bool isLoading = false;
+  bool _isLoading = false;
 
   Future<void> signUserIn(BuildContext context) async {
+    final username = usernameController.text.trim();
+    final password = passwordController.text.trim();
+
+    if (username.isEmpty || password.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Please enter both username and password')),
+      );
+      return;
+    }
+
     setState(() {
-      isLoading = true;
+      _isLoading = true;
     });
 
-    final username = usernameController.text;
-    final password = passwordController.text;
-
     // API endpoint URL
-    final url = Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/login');
+    final url = Uri.parse(
+        'https://intensely-pleasing-bear.ngrok-free.app/testoch1/login.php');
 
     try {
-      // Prepare JSON data
-      final bodyData = {
-        'username': username,
-        'password': password,
-      };
-
-      // Make POST request with JSON body
+      // Make POST request to the backend
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode(bodyData),
+        body: {
+          'username': username,
+          'password': password,
+        },
       );
 
       if (response.statusCode == 200) {
-        try {
-          final jsonResponse = jsonDecode(response.body);
-          print('Response: ${response.body}');
+        // Parse response from the backend
+        final jsonResponse = jsonDecode(response.body);
+        print('Response: ${response.body}'); // Log response for debugging
 
-          // Check if 'status' key exists and is not null
-          if (jsonResponse['status'] == 'success') {
-            // Check if 'token' key exists and is not null
-            final token = jsonResponse['cookie'] as String?;
-            if (token != null) {
-              // Store JWT using shared_preferences
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.setString('cookie', token);
-                     bool isAdmin = jsonResponse['is_admin'] == 1;
-              // Navigate to home page or user input page based on role
-              if (isAdmin) {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => MyHomePage()),
+        if (jsonResponse['status'] == 'success') {
+          // Store cookies and CSRF token using SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('cookie', jsonResponse['cookie']);
+
+          // Check if the user is an admin
+          bool isAdmin = jsonResponse['is_admin'] == 1;
+
+          // Navigate based on the user's role
+          if (isAdmin) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => MyHomePage()), // Admin home page
                 );
-              } else {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => UserInp()),
-                );
-              }
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Token not found in response'), duration: Duration(seconds: 5)),
-              );
-            }
           } else {
-            // Check if 'message' key exists and is not null
-            final errorMessage = jsonResponse['message'] as String? ?? 'Unknown error occurred';
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(errorMessage), duration: const Duration(seconds: 5)),
-            );
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => UserInp()), // User input page
+                );
           }
-        } catch (e) {
+        } else {
+          // Show error message for invalid credentials
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to parse response'), duration: Duration(seconds: 5)),
+            SnackBar(content: Text(jsonResponse['message'])),
           );
-          print('Error parsing JSON: $e');
         }
       } else {
-        // Handle non-200 responses
+        // Handle non-200 responses from the server
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error ${response.statusCode}: ${response.reasonPhrase}'), duration: const Duration(seconds: 5)),
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Row(
+              children: [
+                Icon(Icons.error, color: Colors.white),
+                SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    'Error: Invalid Username or Password',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+            duration: Duration(seconds: 3),
+          ),
         );
-        print('Response status: ${response.statusCode}');
       }
     } catch (e) {
       // Handle network errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Network error: $e'), duration: const Duration(seconds: 5)),
+        SnackBar(content: Text('Network error: $e')),
       );
-      print('Network error: $e');
     } finally {
       setState(() {
-        isLoading = false;
+        _isLoading = false;
       });
     }
+  }
+
+  Widget _buildLogo() {
+    return Column(
+      children: [
+        Icon(
+          Icons.lock,
+          size: 100,
+          color: Colors.black,
+        ),
+        SizedBox(height: 20),
+        Text(
+          'CORTOBA',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 32,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWelcomeText() {
+    return Text(
+      'Welcome Back!\nPlease login to your account',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 18,
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
-      body: SafeArea(
+      // Gradient Background
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade800, Colors.blue.shade200],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
         child: Center(
           child: SingleChildScrollView(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const SizedBox(height: 50),
-                const Icon(Icons.lock_open, size: 100, color: Colors.black),
-                const SizedBox(height: 50),
-                Text(
-                  'Welcome back, you\'ve been missed!',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                  ),
-                ),
-                const SizedBox(height: 25),
-                TextField(
-                  controller: usernameController,
-                  decoration: const InputDecoration(
-                    hintText: 'Username',
-                  ),
-                ),
-                const SizedBox(height: 10),
-                TextField(
-                  controller: passwordController,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    hintText: 'Password',
-                  ),
-                ),
-                const SizedBox(height: 25),
-                isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                        onPressed: () => signUserIn(context),
-                        child: const Text('Sign In'),
-                      ),
-                const SizedBox(height: 25),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Card(
+              color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.85),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+              elevation: 8.0,
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('Not a member?'),
+                    _buildLogo(),
+                    SizedBox(height: 20),
+                    _buildWelcomeText(),
+                    SizedBox(height: 30),
+                    MyTextField(
+                      controller: usernameController,
+                      hintText: 'Username',
+                      obscureText: false,
+                      prefixIcon: Icons.person,
+                    ),
+                    SizedBox(height: 20),
+                    MyTextField(
+                      controller: passwordController,
+                      hintText: 'Password',
+                      obscureText: true,
+                      prefixIcon: Icons.lock,
+                    ),
+                    SizedBox(height: 30),
+                    _isLoading
+                        ? CircularProgressIndicator()
+                        : MyButton(
+                            onTap: () => signUserIn(context),
+                            text: 'Login',
+                            color: Colors.blue.shade700,
+                            borderRadius: 12.0,
+                            width: double.infinity,
+                            height: 50,
+                          ),
+                    SizedBox(height: 20),
                     TextButton(
                       onPressed: () {
+                        // Navigate to the signup page
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => SignUpPage()),
                         );
                       },
-                      child: const Text('Register now'),
+                      child: Text(
+                        'Don\'t have an account? Sign Up',
+                        style: TextStyle(color: Colors.blue.shade700),
+                      ),
                     ),
                   ],
                 ),
-                      
-              ],
+              ),
             ),
           ),
         ),
