@@ -5,6 +5,7 @@ class MyTextField extends StatelessWidget {
   final String hintText;
   final bool obscureText;
   final IconData? prefixIcon;
+  final Function(String)? onChanged;
 
   const MyTextField({
     Key? key,
@@ -12,6 +13,7 @@ class MyTextField extends StatelessWidget {
     required this.hintText,
     required this.obscureText,
     this.prefixIcon,
+    this.onChanged,
   }) : super(key: key);
 
   @override
@@ -19,6 +21,7 @@ class MyTextField extends StatelessWidget {
     return TextField(
       controller: controller,
       obscureText: obscureText,
+      onChanged: onChanged,
       decoration: InputDecoration(
         prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
         hintText: hintText,

@@ -1,0 +1,256 @@
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:CORTOBA/pages/login_page.dart';
+import 'package:CORTOBA/pages/about_page.dart';
+import 'package:CORTOBA/pages/user_page.dart';
+import 'package:CORTOBA/pages/settings_page.dart';
+import 'package:CORTOBA/pages/home_page copy.dart';
+import 'package:CORTOBA/pages/change_password_page.dart';
+
+class SettingsPage extends StatefulWidget {
+  @override
+  _SettingsPageState createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  String username = 'User';
+  String role = 'User';
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    loadUserInfo();
+  }
+
+  Future<void> loadUserInfo() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? storedUsername = prefs.getString('username');
+    bool? isAdmin = prefs.getBool('isAdmin');
+
+    setState(() {
+      username = storedUsername ?? 'User';
+      role = isAdmin != null && isAdmin ? 'Admin' : 'User';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      // App Bar with a Gradient Background
+      appBar: AppBar(
+        title: Text('Settings'),
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Colors.blue, Colors.purple],
+              begin: Alignment.bottomRight,
+              end: Alignment.topLeft,
+            ),
+          ),
+        ),
+        elevation: 0,
+      ),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            // Profile Section
+            Card(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+              elevation: 4,
+              child: ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: AssetImage('assets/profile.jpg'), // Replace with your profile image
+                  radius: 30,
+                ),
+                title: Text(username, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                subtitle: Text(role),
+                trailing: Icon(Icons.edit, color: Colors.blue),
+                onTap: () {
+                  // Handle profile edit
+                },
+              ),
+            ),
+            SizedBox(height: 20),
+            // Settings Options
+            SettingsOption(
+              icon: Icons.lock,
+              title: 'Change Password',
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChangePasswordPage()),
+                );
+              },
+            ),
+            SettingsOption(
+              icon: Icons.notifications,
+              title: 'Notifications',
+              onTap: () {
+                // Navigate to Notifications Settings
+              },
+            ),
+            SettingsOption(
+              icon: Icons.palette,
+              title: 'Theme',
+              onTap: () {
+                // Navigate to Theme Settings
+              },
+            ),
+            SettingsOption(
+              icon: Icons.help,
+              title: 'Help & Support',
+              onTap: () {
+                // Navigate to Help & Support
+              },
+            ),
+            SettingsOption(
+              icon: Icons.info,
+              title: 'About',
+              onTap: () {
+                // Navigate to About Page
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => AboutPage()),
+                );
+              },
+            ),
+            // Optional: Logout Option
+            SettingsOption(
+              icon: Icons.logout,
+              title: 'Logout',
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                await prefs.clear(); // Clear all stored data
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              },
+            ),
+            // Optional: Conditional Admin Panel
+            if (role == 'Admin') ...[
+              SettingsOption(
+                icon: Icons.admin_panel_settings,
+                title: 'Admin Panel',
+                onTap: () {
+                  // Navigate to Admin Panel
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
+
+Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      currentIndex: _currentIndex,
+      onTap: (index) {
+        setState(() {
+          _currentIndex = index;
+          if (index == 3) {
+            _showLogoutDialog();
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyUserPage()),
+            );
+          } else if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyHomePage1()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => SettingsPage()),
+            );
+          }
+        });
+      },
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      selectedItemColor: const Color.fromARGB(255, 49, 136, 163),
+      unselectedItemColor: const Color.fromARGB(255, 0, 0, 0),
+      type: BottomNavigationBarType.fixed,
+      items: const [
+        BottomNavigationBarItem(
+          icon: Icon(Icons.description),
+          label: 'rapports',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'User',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Setting',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.exit_to_app),
+          label: 'Logout',
+        ),
+      ],
+    );
+  }
+
+
+  void _showLogoutDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Logout'),
+        content: Text('Are you sure you want to logout?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+              await prefs.clear(); // Clear all stored data
+
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => LoginPage()),
+              );
+            },
+            child: Text('Logout'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class SettingsOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final VoidCallback onTap;
+
+  SettingsOption({required this.icon, required this.title, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.symmetric(vertical: 8.0),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10.0),
+      ),
+      elevation: 2,
+      child: ListTile(
+        leading: Icon(icon, color: Colors.purple),
+        title: Text(title, style: TextStyle(fontSize: 18)),
+        trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        onTap: onTap,
+      ),
+    );
+  }
+} 

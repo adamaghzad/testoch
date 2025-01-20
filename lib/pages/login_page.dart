@@ -55,26 +55,25 @@ class _LoginPageState extends State<LoginPage> {
         print('Response: ${response.body}'); // Log response for debugging
 
         if (jsonResponse['status'] == 'success') {
-          // Store cookies and CSRF token using SharedPreferences
+          // Store cookies, username, and role using SharedPreferences
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('cookie', jsonResponse['cookie']);
-
-          // Check if the user is an admin
-          bool isAdmin = jsonResponse['is_admin'] == 1;
+          await prefs.setString('username', username);
+          await prefs.setBool('isAdmin', jsonResponse['is_admin'] == 1);
 
           // Navigate based on the user's role
-          if (isAdmin) {
+          if (jsonResponse['is_admin'] == 1) {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                   builder: (context) => MyHomePage()), // Admin home page
-                );
+            );
           } else {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
                   builder: (context) => UserInp()), // User input page
-                );
+            );
           }
         } else {
           // Show error message for invalid credentials

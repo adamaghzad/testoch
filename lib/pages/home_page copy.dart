@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:CORTOBA/pages/login_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:CORTOBA/pages/user_page.dart';
+import 'package:CORTOBA/pages/settings_page.dart';
 
 void main() {
   runApp(MyApp());
@@ -752,23 +754,57 @@ Widget build(BuildContext context) {
     );
   }
 
-  Widget _buildBottomNavigationBar() {
+ Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
       onTap: (index) {
         setState(() {
           _currentIndex = index;
-          if (index == 1) {
+          if (index == 3) {
             _showLogoutDialog();
+          } else if (index == 1) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyUserPage()),
+            );
+          } else if (index == 0) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MyHomePage1()),
+            );
+          } else if (index == 2) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => SettingsPage()),
+            );
           }
         });
       },
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
+      selectedItemColor: const Color.fromARGB(255, 49, 136, 163),
+      unselectedItemColor: const Color.fromARGB(255, 0, 0, 0),
+      type: BottomNavigationBarType.fixed,
       items: const [
-        BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.exit_to_app), label: 'Logout'),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.description),
+          label: 'rapports',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.person),
+          label: 'User',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.settings),
+          label: 'Setting',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.exit_to_app),
+          label: 'Logout',
+        ),
       ],
     );
   }
+
 
   void _showLogoutDialog() {
     showDialog(
@@ -793,6 +829,7 @@ Widget build(BuildContext context) {
                 );
               },
             ),
+            
           ],
         );
       },

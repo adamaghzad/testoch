@@ -55,7 +55,7 @@ class MyButton extends StatelessWidget {
     this.text = 'Sign In',
     this.color = Colors.blue,
     this.borderRadius = 12.0,
-    this.width = 300,
+    this.width = double.infinity,
     this.height = 60,
   }) : super(key: key);
 
