@@ -46,6 +46,8 @@ class _LoginPageState extends State<LoginPage> {
           'password': password,
         },
       );
+      print('Response1: ${response.body}'); // Log response for debugging
+
 
       if (response.statusCode == 200) {
         // Parse response from the backend
