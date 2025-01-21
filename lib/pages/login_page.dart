@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:CORTOBA/pages/UserInput.dart';
-import 'package:CORTOBA/pages/home_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'components/my_button.dart';
 import 'components/my_textfield.dart';
-import 'package:CORTOBA/pages/signup_page.dart';
+import 'signup_page.dart'; // Import the sign-up page for navigation
+import 'home_page copy.dart'; // Import the home page after successful login
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -26,7 +24,7 @@ class _LoginPageState extends State<LoginPage> {
 
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please enter both username and password')),
+        SnackBar(content: Text('Please fill in all fields')),
       );
       return;
     }
@@ -35,9 +33,9 @@ class _LoginPageState extends State<LoginPage> {
       _isLoading = true;
     });
 
-    // API endpoint URL
+    // API endpoint URL for login
     final url = Uri.parse(
-        'https://intensely-pleasing-bear.ngrok-free.app/testoch1/login.php');
+        'https://sculpin-improved-lizard.ngrok-free.app/api/login');
 
     try {
       // Make POST request to the backend
@@ -55,28 +53,34 @@ class _LoginPageState extends State<LoginPage> {
         print('Response: ${response.body}'); // Log response for debugging
 
         if (jsonResponse['status'] == 'success') {
-          // Store cookies, username, and role using SharedPreferences
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('cookie', jsonResponse['cookie']);
-          await prefs.setString('username', username);
-          await prefs.setBool('isAdmin', jsonResponse['is_admin'] == 1);
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.green,
+              content: Row(
+                children: [
+                  Icon(Icons.check_circle, color: Colors.white),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Login successful! Redirecting to home.',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+              duration: Duration(seconds: 3),
+            ),
+          );
 
-          // Navigate based on the user's role
-          if (jsonResponse['is_admin'] == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => MyHomePage()), // Admin home page
-            );
-          } else {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => UserInp()), // User input page
-            );
-          }
+          // Navigate to the home page after a short delay
+          await Future.delayed(Duration(seconds: 3));
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => MyHomePage1()),
+          );
         } else {
-          // Show error message for invalid credentials
+          // Show error message for login failure
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(jsonResponse['message'])),
           );
@@ -84,7 +88,7 @@ class _LoginPageState extends State<LoginPage> {
       } else {
         // Handle non-200 responses from the server
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             backgroundColor: Colors.red,
             content: Row(
               children: [
@@ -92,7 +96,7 @@ class _LoginPageState extends State<LoginPage> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Error: Invalid Username or Password',
+                    'Error: Login failed',
                     style: TextStyle(color: Colors.white),
                   ),
                 ),
@@ -118,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
     return Column(
       children: [
         Icon(
-          Icons.lock,
+          Icons.login,
           size: 100,
           color: Colors.black,
         ),
@@ -137,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildWelcomeText() {
     return Text(
-      'Welcome Back!\nPlease login to your account',
+      'Welcome Back!\nLogin to your account',
       textAlign: TextAlign.center,
       style: TextStyle(
         color: Colors.black,
@@ -162,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
           child: SingleChildScrollView(
             padding: EdgeInsets.symmetric(horizontal: 24.0),
             child: Card(
-              color: const Color.fromARGB(255, 255, 255, 255).withOpacity(0.85),
+              color: Colors.white.withOpacity(0.85),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
               ),
@@ -182,6 +186,7 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: false,
                       prefixIcon: Icons.person,
                     ),
+                    
                     SizedBox(height: 20),
                     MyTextField(
                       controller: passwordController,
@@ -203,7 +208,7 @@ class _LoginPageState extends State<LoginPage> {
                     SizedBox(height: 20),
                     TextButton(
                       onPressed: () {
-                        // Navigate to the signup page
+                        // Navigate to the sign-up page
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(builder: (context) => SignUpPage()),
@@ -211,7 +216,9 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       child: Text(
                         'Don\'t have an account? Sign Up',
-                        style: TextStyle(color: Colors.blue.shade700),
+                        style: TextStyle(
+                          color: Colors.blue.shade700,
+                        ),
                       ),
                     ),
                   ],

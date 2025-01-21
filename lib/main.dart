@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart'; // Import ScreenUtil
+// Removed: import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'pages/login_page.dart';
-import 'pages/home_page copy.dart'; // Import the home page
+import 'pages/home_page copy.dart'; // Ensure this path is correct
 import 'pages/signup_page.dart';
+// Removed: import 'utils/notification_service.dart';
 
-void main() {
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Removed: Initialize Notification Service
+  // await NotificationService().init();
+
   runApp(const MyApp());
 }
 
@@ -13,20 +21,15 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ScreenUtilInit(
-      designSize: Size(360, 690), // Define the base design size (width x height)
-      minTextAdapt: true,         // Automatically adjust text sizes
-      splitScreenMode: true,      // Handle split-screen scenarios
-      builder: (context, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          initialRoute: '/',
-          routes: {
-            '/home': (context) => MyHomePage1(),
-            '/': (context) => LoginPage(),
-          },
-        );
+    return MaterialApp(
+      navigatorKey: navigatorKey, // Keep this if you use it elsewhere
+      debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/home': (context) => MyHomePage1(),
+        '/': (context) => LoginPage(),
       },
+      // If you removed ScreenUtilInit and no longer need it, ensure no related code remains.
     );
   }
 }

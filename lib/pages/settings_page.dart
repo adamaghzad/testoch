@@ -6,6 +6,8 @@ import 'package:CORTOBA/pages/user_page.dart';
 import 'package:CORTOBA/pages/settings_page.dart';
 import 'package:CORTOBA/pages/home_page copy.dart';
 import 'package:CORTOBA/pages/change_password_page.dart';
+import 'package:CORTOBA/pages/help_support_page.dart';
+
 
 class SettingsPage extends StatefulWidget {
   @override
@@ -15,7 +17,7 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   String username = 'User';
   String role = 'User';
-  int _currentIndex = 0;
+  int _currentIndex = 2;
 
   @override
   void initState() {
@@ -34,22 +36,21 @@ class _SettingsPageState extends State<SettingsPage> {
     });
   }
 
+  Future<void> _logout() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Clear all stored data
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => LoginPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // App Bar with a Gradient Background
       appBar: AppBar(
         title: Text('Settings'),
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Colors.blue, Colors.purple],
-              begin: Alignment.bottomRight,
-              end: Alignment.topLeft,
-            ),
-          ),
-        ),
-        elevation: 0,
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
@@ -104,8 +105,10 @@ class _SettingsPageState extends State<SettingsPage> {
               icon: Icons.help,
               title: 'Help & Support',
               onTap: () {
-                // Navigate to Help & Support
-              },
+Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => HelpSupportPage()),
+                );              },
             ),
             SettingsOption(
               icon: Icons.info,
@@ -122,15 +125,7 @@ class _SettingsPageState extends State<SettingsPage> {
             SettingsOption(
               icon: Icons.logout,
               title: 'Logout',
-              onTap: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                await prefs.clear(); // Clear all stored data
-
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              },
+              onTap: _logout,
             ),
             // Optional: Conditional Admin Panel
             if (role == 'Admin') ...[
@@ -149,7 +144,7 @@ class _SettingsPageState extends State<SettingsPage> {
     );
   }
 
-Widget _buildBottomNavigationBar() {
+  Widget _buildBottomNavigationBar() {
     return BottomNavigationBar(
       currentIndex: _currentIndex,
       onTap: (index) {
@@ -200,7 +195,6 @@ Widget _buildBottomNavigationBar() {
     );
   }
 
-
   void _showLogoutDialog() {
     showDialog(
       context: context,
@@ -213,15 +207,7 @@ Widget _buildBottomNavigationBar() {
             child: Text('Cancel'),
           ),
           TextButton(
-            onPressed: () async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
-              await prefs.clear(); // Clear all stored data
-
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => LoginPage()),
-              );
-            },
+            onPressed: _logout,
             child: Text('Logout'),
           ),
         ],
