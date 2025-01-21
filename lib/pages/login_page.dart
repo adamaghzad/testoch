@@ -41,10 +41,13 @@ class _LoginPageState extends State<LoginPage> {
       // Make POST request to the backend
       final response = await http.post(
         url,
-        body: {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
           'username': username,
           'password': password,
-        },
+        }),
       );
       print('Response1: ${response.body}'); // Log response for debugging
 
