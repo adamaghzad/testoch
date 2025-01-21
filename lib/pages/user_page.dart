@@ -80,7 +80,7 @@ class _MyUserPageState extends State<MyUserPage> {
     String? cookie = await _getCookie(); // Retrieve the stored cookie
 
     final response = await http.get(
-      Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/user'),
+      Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/user/'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -400,8 +400,8 @@ class _MyUserPageState extends State<MyUserPage> {
   Future<void> _deleteUserFromBackend(Map<String, dynamic> user) async {
     String? cookie = await _getCookie(); // Retrieve the stored cookie
 
-    final response = await http.post(
-      Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/user/${user['id']}'),
+    final response = await http.get(
+      Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/user/delete/${user['id']}'),
       headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
@@ -411,6 +411,10 @@ class _MyUserPageState extends State<MyUserPage> {
 
     if (response.statusCode != 200) {
       // Handle the error accordingly
+        String? setCookie = response.headers['set-cookie'];
+      if (setCookie != null) {
+        await _saveCookie(setCookie); // Store the cookie for future use
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to delete user')),
       );
@@ -531,6 +535,7 @@ class _MyUserPageState extends State<MyUserPage> {
 
     if (response.statusCode == 200) {
       // Handle response data
+      
       final jsonResponse = json.decode(response.body);
       if (jsonResponse['status'] == 'success') {
         ScaffoldMessenger.of(context).showSnackBar(

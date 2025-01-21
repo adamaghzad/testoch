@@ -26,8 +26,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
-        '/home': (context) => MyHomePage1(),
-        '/': (context) => LoginPage(),
+        '/': (context) => MyHomePage1(),
+        '/home': (context) => LoginPage(),
       },
       // If you removed ScreenUtilInit and no longer need it, ensure no related code remains.
     );

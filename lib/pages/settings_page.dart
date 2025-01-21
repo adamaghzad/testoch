@@ -15,7 +15,7 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  String username = 'User';
+  String username = 'Admin';
   String role = 'User';
   int _currentIndex = 2;
 
@@ -32,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     setState(() {
       username = storedUsername ?? 'User';
-      role = isAdmin != null && isAdmin ? 'Admin' : 'User';
+      role = 'admin';
     });
   }
 

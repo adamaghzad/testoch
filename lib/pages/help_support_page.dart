@@ -34,7 +34,7 @@ class _HelpSupportPageState extends State<HelpSupportPage> {
         },
         body: jsonEncode({
           'description': problemDescription,
-          // Include other necessary fields like user ID if required
+          
         }),
       );
 

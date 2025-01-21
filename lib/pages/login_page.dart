@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'components/my_button.dart';
 import 'components/my_textfield.dart';
 import 'signup_page.dart'; // Import the sign-up page for navigation
@@ -49,7 +50,6 @@ class _LoginPageState extends State<LoginPage> {
           'password': password,
         }),
       );
-      print('Response1: ${response.body}'); // Log response for debugging
 
 
       if (response.statusCode == 200) {
@@ -58,6 +58,15 @@ class _LoginPageState extends State<LoginPage> {
         print('Response: ${response.body}'); // Log response for debugging
 
         if (jsonResponse['status'] == 'success') {
+          // Save username and isAdmin to SharedPreferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('username', username);
+          await prefs.setBool('isAdmin', jsonResponse['isAdmin'] ?? false);
+          // Store cookies and CSRF token using SharedPreferences
+         
+          await prefs.setString('cookie', jsonResponse['cookie']);
+
+
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
