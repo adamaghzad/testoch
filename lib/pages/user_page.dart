@@ -41,6 +41,7 @@ class _MyUserPageState extends State<MyUserPage> {
   bool _selectAllColumns = true;
   int _currentPage = 0;
   final int _itemsPerPage = 10;
+  bool _isCookieSaved = false;
 
   // Filter and sorting states
   String _sortColumn = 'id';
@@ -62,6 +63,7 @@ class _MyUserPageState extends State<MyUserPage> {
   void initState() {
     super.initState();
     _fetchUsers(); // Fetch data from the API when the widget initializes
+    _checkCookie();
   }
 
   // Fetch the cookie from SharedPreferences
@@ -69,16 +71,27 @@ class _MyUserPageState extends State<MyUserPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('cookie'); // Retrieve the stored cookie
   }
+  Future<void> _checkCookie() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? cookie = prefs.getString('cookie'); // Retrieve the stored cookie
+    setState(() {
+      _isCookieSaved = cookie != null;
+    });
+
+    // Print the cookie value to the console
+    if (cookie != null) {
+      print('Saved Cookie: $cookie');
+    } else {
+      print('No cookie saved.');
+    }
+  }
 
   // Save the cookie to SharedPreferences
-  Future<void> _saveCookie(String cookie) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('cookie', cookie); // Save the cookie
-  }
+ 
 
   Future<void> _fetchUsers() async {
     String? cookie = await _getCookie(); // Retrieve the stored cookie
-
+ print('cookieadam:${_getCookie()}');
     final response = await http.get(
       Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/user/'),
       headers: {
@@ -88,12 +101,12 @@ class _MyUserPageState extends State<MyUserPage> {
       },
     );
 
+
     if (response.statusCode == 200) {
       // Save the cookie if it's present in the response headers
-      String? setCookie = response.headers['set-cookie'];
-      if (setCookie != null) {
-        await _saveCookie(setCookie); // Store the cookie for future use
-      }
+    
+
+      print('cookieadam:${_getCookie()}');
 
       final List<dynamic> jsonResponse = json.decode(response.body);
       setState(() {
@@ -153,7 +166,7 @@ class _MyUserPageState extends State<MyUserPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('User Dashboard'),
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.blue,
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -398,25 +411,41 @@ class _MyUserPageState extends State<MyUserPage> {
   }
 
   Future<void> _deleteUserFromBackend(Map<String, dynamic> user) async {
-    String? cookie = await _getCookie(); // Retrieve the stored cookie
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+                        String? storedCookie = prefs.getString('cookie');
 
-    final response = await http.get(
-      Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/user/delete/${user['id']}'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        if (cookie != null) 'Cookie': 'user_auth=$cookie;',
-      },
-    );
+                         print('cookieadam:${storedCookie}');
+                          if (user['id'] == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('User ID is missing')),
+                            );
+                            return;
+                          }
 
-    if (response.statusCode != 200) {
-      // Handle the error accordingly
-        String? setCookie = response.headers['set-cookie'];
-      if (setCookie != null) {
-        await _saveCookie(setCookie); // Store the cookie for future use
+    try {
+      final response = await http.get(
+        Uri.parse('https://sculpin-improved-lizard.ngrok-free.app/api/user/delete/${user['id']}'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          if (storedCookie != null) 'Cookie': 'user_auth=$storedCookie;',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('User deleted successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to delete user')),
+        );
       }
+    } catch (e) {
+      // Handle network or parsing errors
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to delete user')),
+        SnackBar(content: Text('An error occurred: $e')),
       );
     }
   }
@@ -428,7 +457,7 @@ class _MyUserPageState extends State<MyUserPage> {
     final TextEditingController _roleController =
         TextEditingController(text: user['role']);
     final TextEditingController _passwordController =
-        TextEditingController(); // New controller for password
+        TextEditingController(text: user['password']); // New controller for password
 
     bool? result = await showDialog<bool>(
       context: context,

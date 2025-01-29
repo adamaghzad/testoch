@@ -5,7 +5,10 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 import 'components/my_button.dart';
 import 'components/my_textfield.dart';
 import 'signup_page.dart'; // Import the sign-up page for navigation
-import 'home_page copy.dart'; // Import the home page after successful login
+import 'home_page copy.dart';
+import 'UserInput.dart';
+
+ // Import the home page after successful login
 
 class LoginPage extends StatefulWidget {
   LoginPage({super.key});
@@ -18,6 +21,28 @@ class _LoginPageState extends State<LoginPage> {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _isCookieSaved = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCookie();
+  }
+
+  Future<void> _checkCookie() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? cookie = prefs.getString('cookie'); // Retrieve the stored cookie
+    setState(() {
+      _isCookieSaved = cookie != null;
+    });
+
+    // Print the cookie value to the console
+    if (cookie != null) {
+      print('Saved Cookie: $cookie');
+    } else {
+      print('No cookie saved.');
+    }
+  }
 
   Future<void> signUserIn(BuildContext context) async {
     final username = usernameController.text.trim();
@@ -51,7 +76,6 @@ class _LoginPageState extends State<LoginPage> {
         }),
       );
 
-
       if (response.statusCode == 200) {
         // Parse response from the backend
         final jsonResponse = jsonDecode(response.body);
@@ -61,17 +85,19 @@ class _LoginPageState extends State<LoginPage> {
           // Save username and isAdmin to SharedPreferences
           SharedPreferences prefs = await SharedPreferences.getInstance();
           await prefs.setString('username', username);
-          await prefs.setBool('isAdmin', jsonResponse['isAdmin'] ?? false);
+           
           // Store cookies and CSRF token using SharedPreferences
-         
           await prefs.setString('cookie', jsonResponse['cookie']);
 
+      bool isAdmin = jsonResponse['is_admin'] == 1;
+        
 
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              backgroundColor: Colors.green,
+              backgroundColor: Colors.blue,
               content: Row(
+                
                 children: [
                   Icon(Icons.check_circle, color: Colors.white),
                   SizedBox(width: 8),
@@ -86,18 +112,27 @@ class _LoginPageState extends State<LoginPage> {
               duration: Duration(seconds: 3),
             ),
           );
-
-          // Navigate to the home page after a short delay
-          await Future.delayed(Duration(seconds: 3));
-          Navigator.pushReplacement(
+          if(isAdmin){
+             await Future.delayed(Duration(seconds: 3));
+            Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (context) => MyHomePage1()),
           );
+          }
+          else{
+            Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => UserInp()),
+          );
+          }
+         
         } else {
+
           // Show error message for login failure
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(jsonResponse['message'])),
           );
+          
         }
       } else {
         // Handle non-200 responses from the server
@@ -200,7 +235,6 @@ class _LoginPageState extends State<LoginPage> {
                       obscureText: false,
                       prefixIcon: Icons.person,
                     ),
-                    
                     SizedBox(height: 20),
                     MyTextField(
                       controller: passwordController,
@@ -233,6 +267,14 @@ class _LoginPageState extends State<LoginPage> {
                         style: TextStyle(
                           color: Colors.blue.shade700,
                         ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      _isCookieSaved ? 'Cookie is saved' : 'No cookie saved',
+                      style: TextStyle(
+                        color: _isCookieSaved ? Colors.green : Colors.red,
+                        fontSize: 16,
                       ),
                     ),
                   ],

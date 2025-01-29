@@ -32,7 +32,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
     setState(() {
       username = storedUsername ?? 'User';
-      role = 'admin';
+      role = 'Admin';
     });
   }
 
@@ -51,6 +51,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
+        backgroundColor: const Color.fromARGB(255, 0, 61, 104),
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(16.0),
@@ -60,19 +61,18 @@ class _SettingsPageState extends State<SettingsPage> {
             Card(
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(15.0),
+
               ),
               elevation: 4,
               child: ListTile(
                 leading: CircleAvatar(
-                  backgroundImage: AssetImage('assets/profile.jpg'), // Replace with your profile image
+                  backgroundImage: AssetImage('assets/app_icon/icon.png'), // Replace with your profile image
                   radius: 30,
+                  
                 ),
                 title: Text(username, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 subtitle: Text(role),
-                trailing: Icon(Icons.edit, color: Colors.blue),
-                onTap: () {
-                  // Handle profile edit
-                },
+                
               ),
             ),
             SizedBox(height: 20),
@@ -232,7 +232,7 @@ class SettingsOption extends StatelessWidget {
       ),
       elevation: 2,
       child: ListTile(
-        leading: Icon(icon, color: Colors.purple),
+        leading: Icon(icon, color: Colors.blue),
         title: Text(title, style: TextStyle(fontSize: 18)),
         trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
         onTap: onTap,

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 // Removed: import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'pages/login_page.dart';
 import 'pages/home_page copy.dart'; // Ensure this path is correct
-import 'pages/signup_page.dart';
+
 // Removed: import 'utils/notification_service.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -26,8 +26,8 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
-        '/': (context) => MyHomePage1(),
-        '/home': (context) => LoginPage(),
+        '/': (context) => LoginPage(),
+        '/home': (context) => MyHomePage1(),
       },
       // If you removed ScreenUtilInit and no longer need it, ensure no related code remains.
     );
