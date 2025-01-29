@@ -3,7 +3,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:CORTOBA/pages/login_page.dart';
 import 'package:CORTOBA/pages/about_page.dart';
 import 'package:CORTOBA/pages/user_page.dart';
-import 'package:CORTOBA/pages/settings_page.dart';
 import 'package:CORTOBA/pages/home_page copy.dart';
 import 'package:CORTOBA/pages/change_password_page.dart';
 import 'package:CORTOBA/pages/help_support_page.dart';
